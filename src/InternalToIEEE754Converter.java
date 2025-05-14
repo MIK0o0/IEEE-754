@@ -86,7 +86,9 @@ public class InternalToIEEE754Converter extends JFrame {
         }
 
         try {
-            int decimalValue = Integer.parseInt(binaryInput, 2);
+            System.out.println("Binary input: " + binaryInput);
+            long decimalValue = Long.parseLong(binaryInput, 2); // Zmiana na long
+            System.out.println("Decimal value: " + decimalValue);
             int internalFormat = convertDecimalToInternal(decimalValue);
             int ieeeFormat = convertInternalToIEEE754(internalFormat);
 
@@ -101,18 +103,18 @@ public class InternalToIEEE754Converter extends JFrame {
         }
     }
 
-    private int convertDecimalToInternal(int value) {
+    private int convertDecimalToInternal(long value) { // Parametr zmieniony na long
         if (value == 0) return 0;
 
         int exponent = 0;
-        int temp = value;
+        long temp = value; // Zmiana typu na long
         while (temp > 1) {
             temp >>= 1;
             exponent++;
         }
 
         int mantissa = 0;
-        double fractionalPart = ((double)value / (1 << exponent)) - 1.0;
+        double fractionalPart = ((double) value / (1L << exponent)) - 1.0; // Użycie 1L dla long
         if (fractionalPart > 0) {
             for (int i = 1; i <= 24; i++) {
                 fractionalPart *= 2;
@@ -126,6 +128,7 @@ public class InternalToIEEE754Converter extends JFrame {
 
         return 0x80000000 | (exponent << 24) | mantissa;
     }
+
 
     private int convertInternalToIEEE754(int internalFormat) {
         if (internalFormat == 0) return 0;
