@@ -19,7 +19,7 @@ public class InternalToIEEE754Converter extends JFrame {
         initComponents();
         layoutComponents();
     }
-
+//ttest
     private void initComponents() {
         binaryInputField = new JTextField(20);
         convertButton = new JButton("Konwertuj");
