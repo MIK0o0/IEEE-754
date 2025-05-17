@@ -5,7 +5,7 @@ import java.math.BigInteger;
 public class IEEEConverter {
 
     private static final IEEE754Format IEEE_754_FORMAT = IEEE754Format.SINGLE;
-    private static final IEEE754Format INTERNAL_IEEE_FORMAT = new IEEE754Format(7, 23, BigInteger.valueOf(0));
+    private static final IEEE754Format INTERNAL_IEEE_FORMAT = new IEEE754Format(7, 24, BigInteger.valueOf(0));
 
     public static byte[] convertStringToBytes(String input) {
         input = input.replaceAll(" ", "");
@@ -21,8 +21,11 @@ public class IEEEConverter {
     }
 
     public static IEEE754 parseIEEE(String binaryString) {
-        if (isZeroBinary(formatBinaryString(binaryString))) {
+        if (isPositiveZeroBinary(formatBinaryString(binaryString))) {
             return IEEE754.POSITIVE_ZERO;
+        }
+        if (isNegativeBinary(formatBinaryString(binaryString))) {
+            return IEEE754.NEGATIVE_ZERO;
         }
         BitSource bitSource = BitUtils.wrapSource(convertStringToBytes(binaryString));
         return IEEE754.decode(IEEE_754_FORMAT, bitSource);
@@ -31,11 +34,20 @@ public class IEEEConverter {
     public static IEEE754 parseCustomFormat(String binaryString) {
         String formattedBinary = formatBinaryString(binaryString);
 
-        if (isZeroBinary(formattedBinary)) {
+        if (isPositiveZeroBinary(formattedBinary)) {
             return IEEE754.POSITIVE_ZERO;
+        }
+        if (isNegativeBinary(formattedBinary)) {
+            return IEEE754.NEGATIVE_ZERO;
         }
 
         formattedBinary = adjustSignBit(formattedBinary);
+        if (isPositiveZeroBinary(formattedBinary)) {
+            return IEEE754.POSITIVE_ZERO;
+        }
+        if (isNegativeBinary(formattedBinary)) {
+            return IEEE754.NEGATIVE_ZERO;
+        }
         formattedBinary = String.join("", formattedBinary.substring(0, 8), formattedBinary.substring(9), "0");
 
         BitSource bitSource = BitUtils.wrapSource(convertStringToBytes(formattedBinary));
@@ -65,8 +77,12 @@ public class IEEEConverter {
         return String.format("%32s", new BigInteger(convertStringToBytes(binaryString)).toString(2)).replace(' ', '0');
     }
 
-    private static boolean isZeroBinary(String binaryString) {
+    private static boolean isPositiveZeroBinary(String binaryString) {
         return !binaryString.contains("1");
+    }
+
+    private static boolean isNegativeBinary(String binaryString) {
+        return binaryString.startsWith("1") && !binaryString.substring(1).contains("1");
     }
 
     private static String adjustSignBit(String binaryString) {
